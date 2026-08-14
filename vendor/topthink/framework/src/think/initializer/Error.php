@@ -35,7 +35,12 @@ class Error
     public function init(App $app)
     {
         $this->app = $app;
-        error_reporting(E_ALL);
+        // PHP 8.x 兼容：排除 E_DEPRECATED / E_USER_DEPRECATED，避免隐式可空参数等弃用警告导致崩溃
+        if (PHP_VERSION_ID >= 80400) {
+            error_reporting(E_ALL & ~E_DEPRECATED & ~E_USER_DEPRECATED);
+        } else {
+            error_reporting(E_ALL);
+        }
         set_error_handler([$this, 'appError']);
         set_exception_handler([$this, 'appException']);
         register_shutdown_function([$this, 'appShutdown']);
@@ -73,6 +78,15 @@ class Error
     public function appError(int $errno, string $errstr, string $errfile = '', int $errline = 0): void
     {
         $exception = new ErrorException($errno, $errstr, $errfile, $errline);
+
+        // PHP 8.x 兼容：将 E_DEPRECATED / E_USER_DEPRECATED 降级为日志记录，不抛出异常
+        if ($errno === E_DEPRECATED || $errno === E_USER_DEPRECATED) {
+            if (PHP_VERSION_ID >= 80400 && error_reporting() & $errno) {
+                // 仅记录到错误日志，不中断执行
+                @trigger_error($errstr . ' in ' . $errfile . ' on line ' . $errline, E_USER_NOTICE);
+            }
+            return;
+        }
 
         if (error_reporting() & $errno) {
             // 将错误信息托管至 think\exception\ErrorException

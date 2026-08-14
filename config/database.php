@@ -30,12 +30,22 @@ return [
             'password'          => env('database.password', ''),
             // 端口
             'hostport'          => env('database.hostport', '3306'),
-            // 数据库连接参数
-            'params'            => [],
-            // 数据库编码默认采用utf8
-            'charset'           => env('database.charset', 'utf8'),
+            // 数据库连接参数 - MySQL 8.0+ 兼容：启用 ERRMODE_EXCEPTION，并适配 caching_sha2_password
+            'params'            => [
+                \PDO::ATTR_ERRMODE            => \PDO::ERRMODE_EXCEPTION,
+                \PDO::ATTR_DEFAULT_FETCH_MODE => \PDO::FETCH_ASSOC,
+                \PDO::ATTR_EMULATE_PREPARES   => false,
+                \PDO::ATTR_STRINGIFY_FETCHES  => false,
+            ],
+            // 数据库编码：MySQL 8.0+ 推荐 utf8mb4，兼容 emoji 及完整 Unicode
+            'charset'           => env('database.charset', 'utf8mb4'),
             // 数据库表前缀
             'prefix'            => env('database.prefix', ''),
+            // MySQL 8.0+ 连接初始化命令：兼容旧认证模式、设置时区和引擎
+            'init_sqls'         => [
+                "SET NAMES utf8mb4 COLLATE utf8mb4_unicode_ci",
+                "SET SESSION sql_mode = 'STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION'",
+            ],
 
             // 数据库部署方式:0 集中式(单一服务器),1 分布式(主从服务器)
             'deploy'            => 0,
