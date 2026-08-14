@@ -67,13 +67,17 @@ class Index extends QfShop
         }
         
         $config = config("qfshop");
-        
+
+        // 热搜词
+        $hotSearchList = getHotSearchList(20);
+
         View::assign('newList', $newList);
         View::assign('hotList', $hotList);
         View::assign('config', $config);
         View::assign('rankList', $rankList);
         View::assign('fixed', 1);
         View::assign('category_id', 0);
+        View::assign('hotSearchList', $hotSearchList);
         View::assign('seo_title', $config['app_name'].' - '.$config['app_title']);
         View::assign('seo_keywords', $config['app_keywords']);
         View::assign('seo_description', $config['app_description']);
@@ -95,6 +99,11 @@ class Index extends QfShop
         $data['search_type'] = 1;
         $data['is_time'] = 1;
         $list = $this->SourceModel->getList($data);
+
+        // 记录热搜词
+        if (!empty($name) && $page == 1) {
+            recordHotSearch($name);
+        }
         
         
         $rankList = $this->SourceCategoryModel->field('name,image')->where([['status','=',0],['is_sys','=',1]])->order('sort desc')->select();

@@ -17,6 +17,15 @@
     
     {$config.seo_statistics|raw}
     
+    <script>
+        // 深色模式提前初始化，防止主题闪烁
+        (function(){
+            var t = localStorage.getItem('xy-theme');
+            if(t === 'dark' || (!t && window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches)){
+                document.documentElement.setAttribute('data-theme','dark');
+            }
+        })();
+    </script>
     <style>
         :root {
             --theme-color: {$config.home_color|default='#3e3e3e'};

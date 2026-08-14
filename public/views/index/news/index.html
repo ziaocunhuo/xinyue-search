@@ -24,6 +24,13 @@
                         <i class="iconfont icon-sousuo"></i>
                     </div>
                 </div>
+                <div class="hotSearchBox">
+                    <div class="hs-title"><i class="iconfont icon-sousuo"></i>大家都在搜</div>
+                    <div class="hs-tags" v-if="hotSearchList.length">
+                        <a v-for="(item,index) in hotSearchList" :key="index" :href="'/s/'+item.title+'.html'" class="hs-tag">{{item.title}}</a>
+                    </div>
+                    <div class="hs-empty" v-else>暂无热搜词，快去搜索吧~</div>
+                </div>
             </div>
             <div class="home {if $config.ranking_type != 1}homeNO{/if}">
                 {if !empty($newList)}
@@ -118,6 +125,7 @@
     {include file="news/common/footer"}
     <script type="text/javascript" charset="utf-8">
         app.rankList = JSON.parse('<?php echo json_encode($rankList, JSON_UNESCAPED_UNICODE); ?>');
+        app.hotSearchList = JSON.parse('<?php echo json_encode($hotSearchList, JSON_UNESCAPED_UNICODE); ?>');
         for (const item of app.rankList) {
             axios.get('/api/tool/ranking',{
                 params: {

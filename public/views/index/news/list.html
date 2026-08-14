@@ -63,9 +63,17 @@
                             </div>
                         </div>
                     {/if}
+                    <div class="panTypeFilter" id="panTypeFilter">
+                        <a href="javascript:;" class="ptf-item active" onclick="filterPanType(this,-1)">全部</a>
+                        <a href="javascript:;" class="ptf-item" onclick="filterPanType(this,0)">夸克网盘<span class="ptf-count" data-c="0"></span></a>
+                        <a href="javascript:;" class="ptf-item" onclick="filterPanType(this,1)">阿里云盘<span class="ptf-count" data-c="1"></span></a>
+                        <a href="javascript:;" class="ptf-item" onclick="filterPanType(this,2)">百度网盘<span class="ptf-count" data-c="2"></span></a>
+                        <a href="javascript:;" class="ptf-item" onclick="filterPanType(this,3)">UC网盘<span class="ptf-count" data-c="3"></span></a>
+                        <a href="javascript:;" class="ptf-item" onclick="filterPanType(this,4)">迅雷网盘<span class="ptf-count" data-c="4"></span></a>
+                    </div>
                     <div class="list">
                         {foreach $list.items as $key=>$vo }
-                        <div class="item">
+                        <div class="item" data-type="{$vo.is_type}">
                             <a href="javascript:;" onclick="linkBtn(this)" data-index="{$key}" class="title">
                                 {$vo.name|raw}
                             </a>
@@ -238,6 +246,39 @@
                 }, 200);
             }
         }
+
+        // 网盘类型筛选
+        function filterPanType(el, type) {
+            var items = document.querySelectorAll('.listBox .left .box .list .item');
+            var tabs = document.querySelectorAll('#panTypeFilter .ptf-item');
+            tabs.forEach(function(t){ t.classList.remove('active'); });
+            el.classList.add('active');
+            items.forEach(function(item){
+                var itemType = item.getAttribute('data-type');
+                if(type == -1 || itemType == type){
+                    item.classList.remove('ptf-hidden');
+                }else{
+                    item.classList.add('ptf-hidden');
+                }
+            });
+        }
+
+        // 初始化各网盘类型数量统计
+        (function initPanTypeCount(){
+            var counts = {0:0,1:0,2:0,3:0,4:0};
+            document.querySelectorAll('.listBox .left .box .list .item').forEach(function(item){
+                var t = item.getAttribute('data-type');
+                if(counts[t] !== undefined) counts[t]++;
+            });
+            document.querySelectorAll('#panTypeFilter .ptf-count').forEach(function(span){
+                var c = counts[span.getAttribute('data-c')];
+                if(c > 0){
+                    span.textContent = c;
+                }else{
+                    span.parentElement.style.display = 'none';
+                }
+            });
+        })();
 
         let currentEventSource = null;
         function setType(type) {

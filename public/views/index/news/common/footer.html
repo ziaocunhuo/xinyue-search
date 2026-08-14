@@ -29,6 +29,16 @@
             const dialogItem = ref({});
             const is_type = ref(0);
             const pc_type = ref(0);
+            const isDark = ref(document.documentElement.getAttribute('data-theme') === 'dark');
+            const hotSearchList = ref([]);
+
+            // 深色模式切换
+            const toggleTheme = () => {
+                isDark.value = !isDark.value;
+                const theme = isDark.value ? 'dark' : 'light';
+                document.documentElement.setAttribute('data-theme', theme);
+                localStorage.setItem('xy-theme', theme);
+            };
             
             
             // 公共消息方法
@@ -168,9 +178,19 @@
             // 组件挂载时添加滚动监听
             onMounted(() => {
                 handleDeviceType();
-                
+
                 window.addEventListener('scroll', handleScroll);
                 window.addEventListener('resize', handleDeviceType);
+
+                // 获取热搜词（仅首页）
+                if (document.querySelector('.hotSearchBox')) {
+                    axios.get('/api/search/getHotSearch', { params: { limit: 20 } })
+                        .then(res => {
+                            if (res.data.code == 200) {
+                                hotSearchList.value = res.data.data || [];
+                            }
+                        }).catch(() => {});
+                }
             });
 
             // 组件卸载时移除滚动监听
@@ -180,7 +200,7 @@
             });
 
             // 返回数据和方法
-            return { elementOpacity, scrollThreshold, keyword, searchBtn, rankList,newList, setnum, qcodeVisible, layerVisible, content, saveBtn, rankDj,goLink,changeBtn,copyText,drawer,selectBtn,is_m,QList,QLoading,total_result,currentSource,dialogUrl,dialogLoading,dialogItem,is_type,pc_type };
+            return { elementOpacity, scrollThreshold, keyword, searchBtn, rankList,newList, setnum, qcodeVisible, layerVisible, content, saveBtn, rankDj,goLink,changeBtn,copyText,drawer,selectBtn,is_m,QList,QLoading,total_result,currentSource,dialogUrl,dialogLoading,dialogItem,is_type,pc_type,isDark,toggleTheme,hotSearchList };
         }
     })
     .use(ElementPlus) // 使用 Element Plus

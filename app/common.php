@@ -1121,3 +1121,56 @@ function decryptObject($encryptedObject) {
     $object = json_decode($decryptedJson, true);  // true 转换为关联数组
     return $object;
 }
+
+/**
+ * 记录热搜词
+ * @param string $title 搜索关键词
+ */
+function recordHotSearch($title)
+{
+    $title = trim($title);
+    if (mb_strlen($title, 'UTF-8') < 2 || mb_strlen($title, 'UTF-8') > 40) {
+        return;
+    }
+    $cacheDir = runtime_path('cache');
+    if (!is_dir($cacheDir)) {
+        mkdir($cacheDir, 0755, true);
+    }
+    $file = $cacheDir . 'hot_search.json';
+    $data = [];
+    if (file_exists($file)) {
+        $data = json_decode(file_get_contents($file), true);
+        $data = is_array($data) ? $data : [];
+    }
+    $data[$title] = (isset($data[$title]) ? $data[$title] : 0) + 1;
+    arsort($data);
+    $data = array_slice($data, 0, 50, true);
+    file_put_contents($file, json_encode($data, JSON_UNESCAPED_UNICODE));
+}
+
+/**
+ * 获取热搜词列表
+ * @param int $limit 返回条数
+ * @return array
+ */
+function getHotSearchList($limit = 20)
+{
+    $cacheDir = runtime_path('cache');
+    $file = $cacheDir . 'hot_search.json';
+    if (!file_exists($file)) {
+        return [];
+    }
+    $data = json_decode(file_get_contents($file), true);
+    if (!is_array($data)) {
+        return [];
+    }
+    arsort($data);
+    $result = [];
+    $i = 0;
+    foreach ($data as $word => $count) {
+        if ($i >= $limit) break;
+        $result[] = ['title' => (string)$word, 'count' => (int)$count];
+        $i++;
+    }
+    return $result;
+}
