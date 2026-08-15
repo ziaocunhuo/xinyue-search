@@ -1,0 +1,579 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+        <meta name="renderer" content="webkit">
+    <meta name="viewport" content="width=device-width,user-scalable=no,maximum-scale=1.0">
+    <title> - </title>
+    <meta name="keywords" content="" />
+    <meta name="description" content="" />
+    <meta name="referrer" content="no-referrer">
+    <link rel="stylesheet" href="/views/index/news/common/static/css/index.min.css">
+    <link rel="stylesheet" href="/views/index/news/common/static/css/app.css">
+    <link rel="stylesheet" href="/views/index/news/common/static/css/m.css">
+    
+        
+    <script>
+        // 深色模式提前初始化，防止主题闪烁
+        (function(){
+            var t = localStorage.getItem('xy-theme');
+            if(t === 'dark' || (!t && window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches)){
+                document.documentElement.setAttribute('data-theme','dark');
+            }
+        })();
+    </script>
+    <style>
+        :root {
+            --theme-color: #3e3e3e;
+            --theme-theme: #133ab3;
+            --theme-background: #fafafa;
+            --theme-other_background: #ffffff;
+        }
+            </style>
+<meta name="referrer" content="never">
+</head>
+<body>
+    <div class="headBg" style="background-image: url();"></div>
+    <div id="app" v-cloak>
+        <div class="headerBox">
+    <div class="bg" :style="{ opacity: elementOpacity }"></div>
+    <div class="box">
+        <a href="/" class="logoBox" :style="{ opacity: elementOpacity }">
+                    </a>
+        <div class="search" :style="{ opacity: elementOpacity }">
+            <input type="text" v-model="keyword" placeholder="输入关键字进行搜索" @keyup.enter="searchBtn" confirm-type="search" @confirm="searchBtn">
+            <div class="btn" @click="searchBtn">
+                <i class="iconfont icon-sousuo"></i>
+            </div>
+        </div>
+        <div class="navs">
+                        <div class="item" @click="layerVisible = true">提交需求</div>
+                        <div class="btns" v-html="``"></div>
+
+            <div class="theme-toggle" @click="toggleTheme" title="切换深色模式">
+                <svg v-if="isDark" viewBox="0 0 24 24" width="18" height="18" fill="currentColor" style="color:var(--theme-theme)"><path d="M6.76 4.84l-1.8-1.79-1.41 1.41 1.79 1.79 1.42-1.41zM4 10.5H1v2h3v-2zm9-9.95h-2V3.5h2V.55zm7.45 3.91l-1.41-1.41-1.79 1.79 1.41 1.41 1.79-1.79zm-3.21 13.7l1.79 1.8 1.41-1.41-1.8-1.79-1.4 1.4zM20 10.5v2h3v-2h-3zm-8-5c-3.31 0-6 2.69-6 6s2.69 6 6 6 6-2.69 6-6-2.69-6-6-6zm-1 16.95h2V19.5h-2v2.95zm-7.45-3.91l1.41 1.41 1.79-1.8-1.41-1.41-1.79 1.8z"/></svg>
+                <svg v-else viewBox="0 0 24 24" width="18" height="18" fill="currentColor" style="color:var(--theme-theme)"><path d="M12 3c-4.97 0-9 4.03-9 9s4.03 9 9 9 9-4.03 9-9c0-.46-.04-.92-.1-1.36-.98 1.37-2.58 2.26-4.4 2.26-2.98 0-5.4-2.42-5.4-5.4 0-1.81.89-3.42 2.26-4.4-.44-.06-.9-.1-1.36-.1z"/></svg>
+            </div>
+
+            <div class="iconfont icon-caidan" @click="drawer = true"></div>
+        </div>
+    </div>
+</div>
+<div class="headerKox"></div>
+
+
+<el-dialog
+    v-model="qcodeVisible"
+    width="300"
+  >
+    <img src="" style="width: 100%" />
+</el-dialog>
+
+<el-dialog
+    v-model="layerVisible"
+    width="300"
+  >
+    <div class="layerBox">
+		<div class="vname">提交需求</div>
+	    <el-input
+            v-model="content"
+            placeholder="请输入你想看的资源信息~"
+            type="textarea"
+            resize='none'
+          ></el-input>
+		<div class="vbtn" @click="saveBtn">提交</div>
+	</div>
+</el-dialog>
+
+<el-dialog
+    v-model="drawer"
+    width="300"
+    center
+  >
+    <div class="drawer">
+                <div class="item" @click="layerVisible = true">提交需求</div>
+                <div class="btns" v-html="``"></div>
+    </div>
+</el-dialog>
+
+<el-dialog title="" v-model="dialogUrl" class="dialogUrlBox" :close-on-click-modal="false">
+    <div v-loading="dialogLoading" class="dialogUrl" v-if="dialogUrl">
+        <div v-if="dialogItem.showUrl">
+            <block v-show="pc_type!=1">
+                <block v-if="dialogItem.is_type==0">
+                    <div class="title">请使用 <span>夸克APP</span> 扫码获取</div>
+                    <div class="tips">打开夸克APP- 点击搜索框中的相机 - 点击扫码</div>
+                </block>
+                <block v-else>
+                    <div class="title">请使用 <span>手机扫码</span> 获取</div>
+                    <div class="tips">打开微信APP- 点击右上角 - 选择扫一扫</div>
+                </block>
+                <div class="qrcode" id="qrcode"></div>
+            </block>
+            <div class="nav">
+                <div class="item">
+                    <span class="t">{{dialogItem.title}}</span>
+                </div>
+                <div class="item" v-show="pc_type!=2">
+                    <span>资源地址：</span>
+                    <a :href="dialogItem.showUrl" target="_blank">{{dialogItem.showUrl}}</a>
+                </div>
+            </div>
+        </div>
+        <div v-else-if="!dialogLoading">
+            <div class="title">获取失败</div>
+            <div class="tips" style="color: #FF3F3D;">{{dialogItem.message}}</div>
+        </div>
+        <div class="statement">
+            <div class="content">
+                <p>🔔 声明：本站链接均由程序自动收集自公开网盘，不存储、不传播任何文件，跳转链接指向网盘官网。</p>
+                <p>文件内容请自行辨别，如发现违规请向网盘平台举报。本站仅供学习交流，无任何收费行为。</p>
+            </div>
+        </div>
+    </div>
+</el-dialog>
+        <div class="homeBox searchBox">
+            <div class="box">
+                <div class="logoBox">
+                                    </div>
+                                <div class="search">
+                    <input type="text" v-model="keyword" placeholder="输入关键字进行搜索" @keyup.enter="searchBtn" confirm-type="search" @confirm="searchBtn">
+                    <div class="btn" @click="searchBtn">
+                        <i class="iconfont icon-sousuo"></i>
+                    </div>
+                </div>
+                <div class="hotSearchBox">
+                    <div class="hs-title"><i class="iconfont icon-sousuo"></i>大家都在搜</div>
+                    <div class="hs-tags" v-if="hotSearchList.length">
+                        <a v-for="(item,index) in hotSearchList" :key="index" :href="'/s/'+item.title+'.html'" class="hs-tag">{{item.title}}</a>
+                    </div>
+                    <div class="hs-empty" v-else>暂无热搜词，快去搜索吧~</div>
+                </div>
+            </div>
+            <div class="home homeNO">
+                                
+                
+            </div>
+        </div>
+        <div class="footerBox">
+    <div class="box">
+        <p></p>
+        <p>
+                        <a href="/sitemap.xml" target="_blank">网站地图</a>
+        </p>
+    </div>
+</div>
+    </div>
+    <script src="/views/index/news/common/static/js/vue.global.min.js"></script>
+<script src="/views/index/news/common/static/js/index.full.min.js"></script>
+<script src="/views/index/news/common/static/js/axios.min.js"></script>
+<script src="/views/index/news/common/static/js/qrcanvas@3.js"></script>
+<script>
+    const { createApp, ref, onMounted, onUnmounted } = Vue;
+    const { ElButton, ElMessage  } = ElementPlus;
+    const app = createApp({
+        setup() {
+            // 定义响应式数据
+            const elementOpacity = ref(0);
+            const scrollThreshold = ref(150); // 动态设置的滚动阈值
+            const keyword = ref('');
+            const qcodeVisible = ref(false);
+            const layerVisible = ref(false);
+            const content = ref('');
+            const load = ref(false)
+            const drawer = ref(false)
+            const rankList = ref([]);
+            const rankDj = ref([]);
+            const is_m = ref(0);
+            const newList = ref([]);
+            const QList = ref([]);
+            const QLoading = ref(false);
+            const total_result = ref(0);
+            const currentSource = ref(0);
+            const dialogUrl = ref(false);
+            const dialogLoading = ref(false);
+            const dialogItem = ref({});
+            const is_type = ref(0);
+            const pc_type = ref(0);
+            const isDark = ref(document.documentElement.getAttribute('data-theme') === 'dark');
+            const hotSearchList = ref([]);
+
+            // 深色模式切换
+            const toggleTheme = () => {
+                isDark.value = !isDark.value;
+                const theme = isDark.value ? 'dark' : 'light';
+                document.documentElement.setAttribute('data-theme', theme);
+                localStorage.setItem('xy-theme', theme);
+            };
+            
+            
+            // 公共消息方法
+            const showMessage = (message, type = 'info') => {
+                ElMessage({
+                    message,
+                    type,
+                    plain: true,
+                });
+            };
+
+
+             // 滚动监听方法
+            const handleScroll = () => {
+                const scrollTop = window.scrollY || document.documentElement.scrollTop;
+                elementOpacity.value = scrollTop >= scrollThreshold.value
+                    ? Math.min((scrollTop - scrollThreshold.value) / 100, 1)
+                    : Math.max(1 - (scrollThreshold.value - scrollTop) / 100, 0);
+    
+                const boxElement = document.querySelector('.listBox .screen .fixed .box');
+                if (boxElement.style.display === 'block' && is_m.value) {
+                    boxElement.style.display = 'none'; // 隐藏元素
+                }
+            };
+
+            // 搜索按钮点击事件
+            const searchBtn = () => {
+                if (!keyword.value) {
+                    return showMessage('请输入你要搜索的内容~', 'error');
+                }
+                const currentUrl = window.location.href;
+                const targetUrl = `/s/${keyword.value}.html`;
+                if (currentUrl.includes('/s/') || currentUrl.includes('/d/')) {
+                    window.location.href = targetUrl;
+                } else {
+                    window.open(targetUrl, '_blank');
+                }
+            };
+            
+            // 保存按钮点击事件
+            const saveBtn = async () => {
+                if (!content.value) {
+                    return showMessage('请输入你想看的资源信息~', 'error');
+                }
+                if (load.value) return;
+    
+                load.value = true;
+                try {
+                    const response = await axios.post('/api/tool/feedback', { content: content.value });
+                    showMessage(response.data.message, response.data.code === 200 ? 'success' : 'error');
+                    if (response.data.code === 200) {
+                        layerVisible.value = false;
+                        content.value = '';
+                    }
+                } finally {
+                    load.value = false;
+                }
+            };
+            
+            const setnum = (num) => (num / 10000).toFixed(2) + 'W';
+            
+            const goLink = (event,id) => {
+                event.preventDefault();
+                window.location.href = `/d/${id}.html`;
+            }
+            
+            const changeBtn = (e) => {
+                const category_id = `0`;
+                if(category_id){
+                    window.location.href = `/s/${keyword.value}-${e}-${category_id}.html`;
+                }else{
+                    window.location.href = `/s/${keyword.value}-${e}.html`;
+                }
+            };
+            
+            const copyText = async(event,title,url,code) => {
+                event.preventDefault();
+                var text = '标题：'+title+'\n链接：'+url
+                if (code) text += `\n提取码：${code}`;
+                text += `\n由【${''}${window.location.hostname}】提供网盘分享链接`;
+                
+                
+                try {
+                    // 优先使用 navigator.clipboard
+                    await navigator.clipboard.writeText(text);
+                    showMessage('复制成功', 'success');
+                } catch (err) {
+                    // 如果 navigator.clipboard 失败，使用 document.execCommand 作为回退
+                    const textArea = document.createElement('textarea');
+                    textArea.value = text;
+                    textArea.style.position = 'fixed';  // 避免滚动
+                    textArea.style.opacity = 0;
+                    document.body.appendChild(textArea);
+                    textArea.focus();
+                    textArea.select();
+            
+                    try {
+                        const successful = document.execCommand('copy');
+                        if (successful) {
+                            showMessage('复制成功', 'success');
+                        } else {
+                            throw new Error('复制失败');
+                        }
+                    } catch (err) {
+                        showMessage('复制失败，请手动复制', 'error');
+                    }
+            
+                    document.body.removeChild(textArea);
+                }
+            }
+            
+            const selectBtn = () => {
+                if(!is_m.value) return;
+                const boxElement = document.querySelector('.listBox .screen .fixed .box');
+                // 切换 display 属性，显示或隐藏
+                if (boxElement.style.display === 'none' || boxElement.style.display === '') {
+                    boxElement.style.display = 'block'; // 显示
+                } else {
+                    boxElement.style.display = ''; // 隐藏
+                }
+            }
+            
+            const handleDeviceType = () => {
+                const isMobile = window.matchMedia('(max-width: 768px)').matches;
+                if (isMobile) {
+                    // 手机端的逻辑
+                    is_m.value = 1
+                    pc_type.value = 1
+                } else {
+                    // 电脑端的逻辑
+                    is_m.value = 0
+                    pc_type.value = '0';
+                }
+            };
+
+
+            // 组件挂载时添加滚动监听
+            onMounted(() => {
+                handleDeviceType();
+
+                window.addEventListener('scroll', handleScroll);
+                window.addEventListener('resize', handleDeviceType);
+
+                // 获取热搜词（仅首页）
+                if (document.querySelector('.hotSearchBox')) {
+                    axios.get('/api/search/getHotSearch', { params: { limit: 20 } })
+                        .then(res => {
+                            if (res.data.code == 200) {
+                                hotSearchList.value = res.data.data || [];
+                            }
+                        }).catch(() => {});
+                }
+            });
+
+            // 组件卸载时移除滚动监听
+            onUnmounted(() => {
+                window.removeEventListener('scroll', handleScroll);
+                window.removeEventListener('resize', handleDeviceType);
+            });
+
+            // 返回数据和方法
+            return { elementOpacity, scrollThreshold, keyword, searchBtn, rankList,newList, setnum, qcodeVisible, layerVisible, content, saveBtn, rankDj,goLink,changeBtn,copyText,drawer,selectBtn,is_m,QList,QLoading,total_result,currentSource,dialogUrl,dialogLoading,dialogItem,is_type,pc_type,isDark,toggleTheme,hotSearchList };
+        }
+    })
+    .use(ElementPlus) // 使用 Element Plus
+    .mount('#app'); // 挂载 Vue 实例
+</script>
+    <script type="text/javascript" charset="utf-8">
+        app.rankList = JSON.parse('[{"name":"短剧","image":""},{"name":"电影","image":""},{"name":"电视剧","image":""},{"name":"动漫","image":""},{"name":"综艺","image":""}]');
+        app.hotSearchList = JSON.parse('[]');
+        for (const item of app.rankList) {
+            axios.get('/api/tool/ranking',{
+                params: {
+                  channel: item.name
+                }
+            })
+        }
+    </script>
+
+<script type='text/javascript'>
+console.group('基本');
+console.log("\u8bf7\u6c42\u4fe1\u606f 2026-08-15 15:28:55 HTTP\/1.1 GET : http:\/\/127.0.0.1:8000\/");
+console.log("\u8fd0\u884c\u65f6\u95f4 0.111959s [ \u541e\u5410\u7387\uff1a8.93req\/s ] \u5185\u5b58\u6d88\u8017\uff1a1,114.21kb \u6587\u4ef6\u52a0\u8f7d\uff1a173");
+console.log("\u67e5\u8be2\u4fe1\u606f 4 queries");
+console.log("\u7f13\u5b58\u4fe1\u606f 0 reads,0 writes");
+console.log("\u4f1a\u8bdd\u4fe1\u606f SESSION_ID=1ac4dc03f3a8065447f8005962b03968");
+console.groupEnd();console.groupCollapsed('文件');
+console.log("1 \/workspace\/public\/router.php ( 0.78 KB )");
+console.log("2 \/workspace\/public\/index.php ( 1.41 KB )");
+console.log("3 \/workspace\/vendor\/autoload.php ( 0.17 KB )");
+console.log("4 \/workspace\/vendor\/composer\/autoload_real.php ( 2.49 KB )");
+console.log("5 \/workspace\/vendor\/composer\/platform_check.php ( 0.90 KB )");
+console.log("6 \/workspace\/vendor\/composer\/ClassLoader.php ( 14.03 KB )");
+console.log("7 \/workspace\/vendor\/composer\/autoload_static.php ( 14.94 KB )");
+console.log("8 \/workspace\/vendor\/symfony\/polyfill-php80\/bootstrap.php ( 1.50 KB )");
+console.log("9 \/workspace\/vendor\/symfony\/deprecation-contracts\/function.php ( 0.98 KB )");
+console.log("10 \/workspace\/vendor\/symfony\/polyfill-mbstring\/bootstrap.php ( 7.33 KB )");
+console.log("11 \/workspace\/vendor\/symfony\/polyfill-mbstring\/bootstrap80.php ( 8.84 KB )");
+console.log("12 \/workspace\/vendor\/symfony\/polyfill-php72\/bootstrap.php ( 1.89 KB )");
+console.log("13 \/workspace\/vendor\/symfony\/var-dumper\/Resources\/functions\/dump.php ( 0.79 KB )");
+console.log("14 \/workspace\/vendor\/ralouphie\/getallheaders\/src\/getallheaders.php ( 1.60 KB )");
+console.log("15 \/workspace\/vendor\/topthink\/think-helper\/src\/helper.php ( 7.35 KB )");
+console.log("16 \/workspace\/vendor\/symfony\/polyfill-php73\/bootstrap.php ( 0.99 KB )");
+console.log("17 \/workspace\/vendor\/guzzlehttp\/guzzle\/src\/functions_include.php ( 0.16 KB )");
+console.log("18 \/workspace\/vendor\/guzzlehttp\/guzzle\/src\/functions.php ( 5.55 KB )");
+console.log("19 \/workspace\/vendor\/topthink\/think-orm\/stubs\/load_stubs.php ( 0.16 KB )");
+console.log("20 \/workspace\/vendor\/topthink\/framework\/src\/think\/Exception.php ( 1.69 KB )");
+console.log("21 \/workspace\/vendor\/topthink\/framework\/src\/think\/Facade.php ( 2.71 KB )");
+console.log("22 \/workspace\/vendor\/symfony\/translation\/Resources\/functions.php ( 0.55 KB )");
+console.log("23 \/workspace\/vendor\/adbario\/php-dot-notation\/src\/helpers.php ( 0.57 KB )");
+console.log("24 \/workspace\/vendor\/mtdowling\/jmespath.php\/src\/JmesPath.php ( 0.36 KB )");
+console.log("25 \/workspace\/vendor\/tightenco\/collect\/src\/Collect\/Support\/helpers.php ( 4.01 KB )");
+console.log("26 \/workspace\/vendor\/tightenco\/collect\/src\/Collect\/Support\/alias.php ( 1.49 KB )");
+console.log("27 \/workspace\/vendor\/tightenco\/collect\/src\/Collect\/Contracts\/Support\/Arrayable.php ( 0.19 KB )");
+console.log("28 \/workspace\/vendor\/tightenco\/collect\/src\/Collect\/Contracts\/Support\/Jsonable.php ( 0.24 KB )");
+console.log("29 \/workspace\/vendor\/tightenco\/collect\/src\/Collect\/Contracts\/Support\/Htmlable.php ( 0.19 KB )");
+console.log("30 \/workspace\/vendor\/tightenco\/collect\/src\/Collect\/Contracts\/Support\/CanBeEscapedWhenCastToString.php ( 0.33 KB )");
+console.log("31 \/workspace\/vendor\/tightenco\/collect\/src\/Collect\/Support\/Arr.php ( 17.85 KB )");
+console.log("32 \/workspace\/vendor\/tightenco\/collect\/src\/Collect\/Support\/Traits\/Macroable.php ( 2.79 KB )");
+console.log("33 \/workspace\/vendor\/tightenco\/collect\/src\/Collect\/Support\/Collection.php ( 38.28 KB )");
+console.log("34 \/workspace\/vendor\/tightenco\/collect\/src\/Collect\/Support\/Traits\/EnumeratesValues.php ( 27.25 KB )");
+console.log("35 \/workspace\/vendor\/tightenco\/collect\/src\/Collect\/Support\/Enumerable.php ( 23.83 KB )");
+console.log("36 \/workspace\/vendor\/tightenco\/collect\/src\/Collect\/Support\/HigherOrderCollectionProxy.php ( 1.40 KB )");
+console.log("37 \/workspace\/vendor\/tightenco\/collect\/src\/Collect\/Support\/HigherOrderWhenProxy.php ( 1.30 KB )");
+console.log("38 \/workspace\/vendor\/tightenco\/collect\/src\/Collect\/Support\/LazyCollection.php ( 38.00 KB )");
+console.log("39 \/workspace\/vendor\/alibabacloud\/client\/src\/Functions.php ( 5.33 KB )");
+console.log("40 \/workspace\/vendor\/overtrue\/wechat\/src\/Kernel\/Support\/Helpers.php ( 2.54 KB )");
+console.log("41 \/workspace\/vendor\/overtrue\/wechat\/src\/Kernel\/Helpers.php ( 1.89 KB )");
+console.log("42 \/workspace\/vendor\/topthink\/think-queue\/src\/common.php ( 1.01 KB )");
+console.log("43 \/workspace\/vendor\/topthink\/framework\/src\/think\/App.php ( 14.17 KB )");
+console.log("44 \/workspace\/vendor\/topthink\/framework\/src\/think\/Container.php ( 15.38 KB )");
+console.log("45 \/workspace\/vendor\/psr\/container\/src\/ContainerInterface.php ( 1.02 KB )");
+console.log("46 \/workspace\/app\/provider.php ( 0.19 KB )");
+console.log("47 \/workspace\/vendor\/topthink\/framework\/src\/think\/Http.php ( 6.12 KB )");
+console.log("48 \/workspace\/vendor\/topthink\/think-helper\/src\/helper\/Str.php ( 7.28 KB )");
+console.log("49 \/workspace\/vendor\/topthink\/framework\/src\/think\/Env.php ( 4.64 KB )");
+console.log("50 \/workspace\/app\/common.php ( 32.80 KB )");
+console.log("51 \/workspace\/vendor\/topthink\/framework\/src\/helper.php ( 18.44 KB )");
+console.log("52 \/workspace\/vendor\/topthink\/framework\/src\/think\/Config.php ( 5.03 KB )");
+console.log("53 \/workspace\/config\/app.php ( 1.13 KB )");
+console.log("54 \/workspace\/vendor\/topthink\/framework\/src\/think\/facade\/Env.php ( 1.67 KB )");
+console.log("55 \/workspace\/config\/cache.php ( 0.80 KB )");
+console.log("56 \/workspace\/config\/console.php ( 0.19 KB )");
+console.log("57 \/workspace\/config\/cookie.php ( 0.49 KB )");
+console.log("58 \/workspace\/config\/database.php ( 3.02 KB )");
+console.log("59 \/workspace\/config\/filesystem.php ( 0.21 KB )");
+console.log("60 \/workspace\/config\/lang.php ( 0.75 KB )");
+console.log("61 \/workspace\/config\/log.php ( 1.37 KB )");
+console.log("62 \/workspace\/config\/middleware.php ( 0.19 KB )");
+console.log("63 \/workspace\/config\/queue.php ( 1.05 KB )");
+console.log("64 \/workspace\/config\/route.php ( 1.58 KB )");
+console.log("65 \/workspace\/config\/session.php ( 0.57 KB )");
+console.log("66 \/workspace\/config\/trace.php ( 0.34 KB )");
+console.log("67 \/workspace\/config\/view.php ( 0.90 KB )");
+console.log("68 \/workspace\/app\/event.php ( 0.25 KB )");
+console.log("69 \/workspace\/vendor\/topthink\/framework\/src\/think\/Event.php ( 6.96 KB )");
+console.log("70 \/workspace\/app\/service.php ( 0.13 KB )");
+console.log("71 \/workspace\/app\/AppService.php ( 0.26 KB )");
+console.log("72 \/workspace\/vendor\/topthink\/framework\/src\/think\/Service.php ( 1.67 KB )");
+console.log("73 \/workspace\/vendor\/topthink\/framework\/src\/think\/Lang.php ( 7.60 KB )");
+console.log("74 \/workspace\/vendor\/topthink\/framework\/src\/lang\/zh-cn.php ( 12.88 KB )");
+console.log("75 \/workspace\/vendor\/topthink\/framework\/src\/think\/initializer\/Error.php ( 3.98 KB )");
+console.log("76 \/workspace\/vendor\/topthink\/framework\/src\/think\/initializer\/RegisterService.php ( 1.33 KB )");
+console.log("77 \/workspace\/vendor\/services.php ( 0.20 KB )");
+console.log("78 \/workspace\/vendor\/topthink\/framework\/src\/think\/service\/PaginatorService.php ( 1.52 KB )");
+console.log("79 \/workspace\/vendor\/topthink\/framework\/src\/think\/service\/ValidateService.php ( 0.99 KB )");
+console.log("80 \/workspace\/vendor\/topthink\/framework\/src\/think\/service\/ModelService.php ( 1.76 KB )");
+console.log("81 \/workspace\/vendor\/topthink\/think-multi-app\/src\/Service.php ( 1.05 KB )");
+console.log("82 \/workspace\/vendor\/topthink\/think-queue\/src\/queue\/Service.php ( 1.24 KB )");
+console.log("83 \/workspace\/vendor\/topthink\/think-trace\/src\/Service.php ( 0.77 KB )");
+console.log("84 \/workspace\/vendor\/topthink\/framework\/src\/think\/Middleware.php ( 6.78 KB )");
+console.log("85 \/workspace\/vendor\/topthink\/framework\/src\/think\/initializer\/BootService.php ( 0.77 KB )");
+console.log("86 \/workspace\/vendor\/topthink\/framework\/src\/think\/exception\/ErrorException.php ( 1.73 KB )");
+console.log("87 \/workspace\/vendor\/topthink\/think-orm\/src\/Paginator.php ( 11.80 KB )");
+console.log("88 \/workspace\/vendor\/topthink\/framework\/src\/think\/Validate.php ( 46.10 KB )");
+console.log("89 \/workspace\/vendor\/topthink\/think-orm\/src\/Model.php ( 25.28 KB )");
+console.log("90 \/workspace\/vendor\/topthink\/think-orm\/src\/model\/concern\/Attribute.php ( 17.61 KB )");
+console.log("91 \/workspace\/vendor\/topthink\/think-orm\/src\/model\/concern\/RelationShip.php ( 26.12 KB )");
+console.log("92 \/workspace\/vendor\/topthink\/think-orm\/src\/model\/concern\/ModelEvent.php ( 2.27 KB )");
+console.log("93 \/workspace\/vendor\/topthink\/think-orm\/src\/model\/concern\/TimeStamp.php ( 5.70 KB )");
+console.log("94 \/workspace\/vendor\/topthink\/think-orm\/src\/model\/concern\/Conversion.php ( 10.41 KB )");
+console.log("95 \/workspace\/vendor\/topthink\/think-helper\/src\/contract\/Arrayable.php ( 0.09 KB )");
+console.log("96 \/workspace\/vendor\/topthink\/think-helper\/src\/contract\/Jsonable.php ( 0.13 KB )");
+console.log("97 \/workspace\/vendor\/topthink\/framework\/src\/think\/Db.php ( 2.87 KB )");
+console.log("98 \/workspace\/vendor\/topthink\/think-orm\/src\/DbManager.php ( 8.49 KB )");
+console.log("99 \/workspace\/vendor\/topthink\/framework\/src\/think\/Log.php ( 8.50 KB )");
+console.log("100 \/workspace\/vendor\/topthink\/framework\/src\/think\/Manager.php ( 3.98 KB )");
+console.log("101 \/workspace\/vendor\/psr\/log\/Psr\/Log\/LoggerInterface.php ( 3.04 KB )");
+console.log("102 \/workspace\/vendor\/topthink\/framework\/src\/think\/Cache.php ( 4.79 KB )");
+console.log("103 \/workspace\/vendor\/psr\/simple-cache\/src\/CacheInterface.php ( 4.50 KB )");
+console.log("104 \/workspace\/vendor\/topthink\/think-helper\/src\/helper\/Arr.php ( 15.54 KB )");
+console.log("105 \/workspace\/vendor\/topthink\/framework\/src\/think\/cache\/driver\/File.php ( 7.42 KB )");
+console.log("106 \/workspace\/vendor\/topthink\/framework\/src\/think\/cache\/Driver.php ( 8.06 KB )");
+console.log("107 \/workspace\/vendor\/topthink\/framework\/src\/think\/contract\/CacheHandlerInterface.php ( 2.25 KB )");
+console.log("108 \/workspace\/vendor\/topthink\/framework\/src\/think\/Console.php ( 22.65 KB )");
+console.log("109 \/workspace\/app\/Request.php ( 0.09 KB )");
+console.log("110 \/workspace\/vendor\/topthink\/framework\/src\/think\/Request.php ( 54.04 KB )");
+console.log("111 \/workspace\/app\/middleware.php ( 0.33 KB )");
+console.log("112 \/workspace\/vendor\/topthink\/framework\/src\/think\/Pipeline.php ( 2.61 KB )");
+console.log("113 \/workspace\/vendor\/topthink\/think-trace\/src\/TraceDebug.php ( 2.94 KB )");
+console.log("114 \/workspace\/vendor\/topthink\/framework\/src\/think\/middleware\/AllowCrossDomain.php ( 2.08 KB )");
+console.log("115 \/workspace\/vendor\/topthink\/framework\/src\/think\/middleware\/SessionInit.php ( 2.06 KB )");
+console.log("116 \/workspace\/vendor\/topthink\/framework\/src\/think\/Session.php ( 1.80 KB )");
+console.log("117 \/workspace\/vendor\/topthink\/framework\/src\/think\/session\/driver\/File.php ( 6.28 KB )");
+console.log("118 \/workspace\/vendor\/topthink\/framework\/src\/think\/contract\/SessionHandlerInterface.php ( 0.87 KB )");
+console.log("119 \/workspace\/vendor\/topthink\/framework\/src\/think\/session\/Store.php ( 7.26 KB )");
+console.log("120 \/workspace\/vendor\/topthink\/think-multi-app\/src\/MultiApp.php ( 7.07 KB )");
+console.log("121 \/workspace\/vendor\/topthink\/framework\/src\/think\/Route.php ( 23.96 KB )");
+console.log("122 \/workspace\/vendor\/topthink\/framework\/src\/think\/route\/RuleName.php ( 5.33 KB )");
+console.log("123 \/workspace\/vendor\/topthink\/framework\/src\/think\/route\/Domain.php ( 5.55 KB )");
+console.log("124 \/workspace\/vendor\/topthink\/framework\/src\/think\/route\/RuleGroup.php ( 13.61 KB )");
+console.log("125 \/workspace\/vendor\/topthink\/framework\/src\/think\/route\/Rule.php ( 22.85 KB )");
+console.log("126 \/workspace\/vendor\/topthink\/framework\/src\/think\/route\/RuleItem.php ( 8.81 KB )");
+console.log("127 \/workspace\/app\/index\/route\/index.php ( 0.25 KB )");
+console.log("128 \/workspace\/vendor\/topthink\/framework\/src\/think\/facade\/Route.php ( 4.88 KB )");
+console.log("129 \/workspace\/vendor\/topthink\/framework\/src\/think\/route\/dispatch\/Url.php ( 3.42 KB )");
+console.log("130 \/workspace\/vendor\/topthink\/framework\/src\/think\/route\/dispatch\/Controller.php ( 6.61 KB )");
+console.log("131 \/workspace\/vendor\/topthink\/framework\/src\/think\/route\/Dispatch.php ( 6.49 KB )");
+console.log("132 \/workspace\/app\/index\/controller\/Index.php ( 9.69 KB )");
+console.log("133 \/workspace\/app\/index\/QfShop.php ( 0.83 KB )");
+console.log("134 \/workspace\/app\/model\/Conf.php ( 0.59 KB )");
+console.log("135 \/workspace\/app\/model\/QfShop.php ( 5.90 KB )");
+console.log("136 \/workspace\/vendor\/topthink\/think-orm\/src\/db\/connector\/Mysql.php ( 4.39 KB )");
+console.log("137 \/workspace\/vendor\/topthink\/think-orm\/src\/db\/PDOConnection.php ( 52.45 KB )");
+console.log("138 \/workspace\/vendor\/topthink\/think-orm\/src\/db\/Connection.php ( 7.67 KB )");
+console.log("139 \/workspace\/vendor\/topthink\/think-orm\/src\/db\/ConnectionInterface.php ( 4.56 KB )");
+console.log("140 \/workspace\/vendor\/topthink\/think-orm\/src\/db\/builder\/Mysql.php ( 15.93 KB )");
+console.log("141 \/workspace\/vendor\/topthink\/think-orm\/src\/db\/Builder.php ( 41.58 KB )");
+console.log("142 \/workspace\/vendor\/topthink\/think-orm\/src\/db\/Query.php ( 10.64 KB )");
+console.log("143 \/workspace\/vendor\/topthink\/think-orm\/src\/db\/BaseQuery.php ( 36.47 KB )");
+console.log("144 \/workspace\/vendor\/topthink\/think-orm\/src\/db\/concern\/TimeFieldQuery.php ( 7.50 KB )");
+console.log("145 \/workspace\/vendor\/topthink\/think-orm\/src\/db\/concern\/AggregateQuery.php ( 3.26 KB )");
+console.log("146 \/workspace\/vendor\/topthink\/think-orm\/src\/db\/concern\/ModelRelationQuery.php ( 16.06 KB )");
+console.log("147 \/workspace\/vendor\/topthink\/think-orm\/src\/db\/concern\/ResultOperation.php ( 6.29 KB )");
+console.log("148 \/workspace\/vendor\/topthink\/think-orm\/src\/db\/concern\/Transaction.php ( 2.85 KB )");
+console.log("149 \/workspace\/vendor\/topthink\/think-orm\/src\/db\/concern\/WhereQuery.php ( 16.22 KB )");
+console.log("150 \/workspace\/vendor\/topthink\/think-orm\/src\/db\/concern\/JoinAndViewQuery.php ( 6.86 KB )");
+console.log("151 \/workspace\/vendor\/topthink\/think-orm\/src\/db\/concern\/ParamsBind.php ( 3.36 KB )");
+console.log("152 \/workspace\/vendor\/topthink\/think-orm\/src\/db\/concern\/TableFieldInfo.php ( 2.51 KB )");
+console.log("153 \/workspace\/vendor\/topthink\/framework\/src\/think\/log\/driver\/File.php ( 6.17 KB )");
+console.log("154 \/workspace\/vendor\/topthink\/framework\/src\/think\/contract\/LogHandlerInterface.php ( 0.86 KB )");
+console.log("155 \/workspace\/vendor\/topthink\/framework\/src\/think\/log\/Channel.php ( 6.54 KB )");
+console.log("156 \/workspace\/vendor\/topthink\/framework\/src\/think\/event\/LogRecord.php ( 0.86 KB )");
+console.log("157 \/workspace\/vendor\/topthink\/think-orm\/src\/model\/Collection.php ( 6.78 KB )");
+console.log("158 \/workspace\/vendor\/topthink\/think-helper\/src\/Collection.php ( 16.10 KB )");
+console.log("159 \/workspace\/vendor\/topthink\/framework\/src\/think\/facade\/Config.php ( 1.37 KB )");
+console.log("160 \/workspace\/app\/model\/Source.php ( 11.02 KB )");
+console.log("161 \/workspace\/app\/model\/SourceCategory.php ( 0.45 KB )");
+console.log("162 \/workspace\/vendor\/topthink\/framework\/src\/think\/facade\/View.php ( 1.71 KB )");
+console.log("163 \/workspace\/vendor\/topthink\/framework\/src\/think\/View.php ( 4.41 KB )");
+console.log("164 \/workspace\/vendor\/topthink\/think-view\/src\/Think.php ( 8.42 KB )");
+console.log("165 \/workspace\/vendor\/topthink\/think-template\/src\/Template.php ( 46.85 KB )");
+console.log("166 \/workspace\/vendor\/topthink\/think-template\/src\/template\/driver\/File.php ( 2.33 KB )");
+console.log("167 \/workspace\/vendor\/topthink\/think-template\/src\/template\/taglib\/Cx.php ( 24.23 KB )");
+console.log("168 \/workspace\/vendor\/topthink\/think-template\/src\/template\/TagLib.php ( 12.25 KB )");
+console.log("169 \/workspace\/runtime\/index\/temp\/db03a9d997e1d62d8d34a094bc6473d3.php ( 26.57 KB )");
+console.log("170 \/workspace\/vendor\/topthink\/framework\/src\/think\/Response.php ( 8.60 KB )");
+console.log("171 \/workspace\/vendor\/topthink\/framework\/src\/think\/response\/Html.php ( 0.98 KB )");
+console.log("172 \/workspace\/vendor\/topthink\/framework\/src\/think\/Cookie.php ( 6.28 KB )");
+console.log("173 \/workspace\/vendor\/topthink\/think-trace\/src\/Console.php ( 6.12 KB )");
+console.groupEnd();console.groupCollapsed('流程');
+console.groupEnd();console.group('错误');
+console.groupEnd();console.groupCollapsed('sql');
+console.log("%cCONNECT:[ UseTime:0.000912s ] mysql:host=127.0.0.1;port=3306;dbname=xinyue_search;charset=utf8mb4", "color:#009bb4;");
+console.log("%cSHOW FULL COLUMNS FROM `qf_conf` [ RunTime:0.003921s ]", "color:#009bb4;");
+console.log("%cSELECT * FROM `qf_conf` [ RunTime:0.000295s ]", "color:#009bb4;");
+console.log("%cSHOW FULL COLUMNS FROM `qf_source_category` [ RunTime:0.003529s ]", "color:#009bb4;");
+console.log("%cSELECT `name`,`image` FROM `qf_source_category` WHERE  `status` = 0  AND `is_sys` = 1 ORDER BY `sort` DESC [ RunTime:0.000428s ]", "color:#009bb4;");
+console.groupEnd();console.group('调试');
+console.groupEnd();
+</script></body>
+</html>

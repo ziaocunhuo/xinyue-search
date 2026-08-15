@@ -1,0 +1,17 @@
+APP_DEBUG = true
+
+[DATABASE]
+TYPE = mysql
+HOSTNAME = 127.0.0.1
+DATABASE = xinyue_search
+USERNAME = xinyue
+PASSWORD = xinyue_pass_2026
+HOSTPORT = 3306
+CHARSET = utf8mb4
+PREFIX = qf_
+
+[LANG]
+DEFAULT_LANG = zh-cn
+
+[DEFAULT_TIMEZONE]
+DEFAULT_TIMEZONE = Asia/Shanghai
