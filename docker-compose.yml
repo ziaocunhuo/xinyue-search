@@ -1,0 +1,63 @@
+services:
+  nginx:
+    image: nginx:1.24-alpine
+    container_name: xinyue-nginx
+    restart: unless-stopped
+    ports:
+      - "8091:80"
+    volumes:
+      - ./docker/nginx/default.conf:/etc/nginx/conf.d/default.conf:ro
+      - ./:/var/www/html:ro
+      - ./data/nginx-logs:/var/log/nginx
+    depends_on:
+      - php
+    networks:
+      - xinyue-net
+
+  php:
+    build:
+      context: .
+      dockerfile: docker/php/Dockerfile
+    container_name: xinyue-php
+    restart: unless-stopped
+    volumes:
+      - ./:/var/www/html
+      - ./data/php-sessions:/var/www/html/runtime/session
+      - ./data/php-logs:/var/www/html/runtime/log
+    depends_on:
+      mariadb:
+        condition: service_healthy
+    networks:
+      - xinyue-net
+    environment:
+      - DB_HOST=mariadb
+      - DB_PORT=3306
+      - DB_NAME=${MYSQL_DATABASE}
+      - DB_USER=${MYSQL_USER}
+      - DB_PASS=${MYSQL_PASSWORD}
+      - DB_PREFIX=qf_
+      - APP_DEBUG=${APP_DEBUG}
+
+  mariadb:
+    image: mariadb:10.11
+    container_name: xinyue-mariadb
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+    volumes:
+      - ./data/mariadb:/var/lib/mysql
+      - ./docker/mariadb/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    networks:
+      - xinyue-net
+    healthcheck:
+      test: ["CMD", "mariadb", "-u", "root", "-p${MYSQL_ROOT_PASSWORD}", "-e", "SELECT 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+networks:
+  xinyue-net:
+    driver: bridge
